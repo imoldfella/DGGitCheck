@@ -1,6 +1,6 @@
 ﻿using LibGit2Sharp;
 var o = await Recover.run();
-File.WriteAllText("/Users/jimhurd/dev/asi/DGGitcheck/recover.txt", o);
+File.WriteAllText("recover.txt", o);
 
 // using (var repo = new Repository(@"D:\source\LibGit2Sharp"))
 // {

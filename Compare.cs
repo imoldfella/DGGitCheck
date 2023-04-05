@@ -43,7 +43,7 @@ public class CompareFiles
     {
         var lines = s.Split("\n");
         int i = 0;
-        while (i < lines.Length && (lines[i].Contains("using") || lines[i].Contains("namespace") || lines[i].Trim().Length == 0))
+        while (i < lines.Length && (lines[i].Contains("using") || (lines[i].Contains("namespace") && lines[i].Contains(";") ) || lines[i].Trim().Length == 0))
         {
             i++;
         }
@@ -91,14 +91,14 @@ public class CompareFiles
         {
             if (!b.Contains(ax))
             {
-                Console.WriteLine($"- {ax}");
+                sb.AppendLine($"- {ax}");
             }
         }
         foreach (var bx in b)
         {
             if (!a.Contains(bx))
             {
-                Console.WriteLine($"+ {bx}");
+                sb.AppendLine($"+ {bx}");
             }
         }
         foreach (var bx in b)
@@ -109,9 +109,8 @@ public class CompareFiles
                 if (f != "")
                 {
                     var replace = Path.Join(from, bx);
-                    File.Move(replace, replace + ".replace");
-                    File.WriteAllText(replace, f);
-
+                    //File.Move(replace, replace + ".replace");
+                    File.WriteAllText(replace+".asi1", f);
                 }
             }
         }
@@ -124,7 +123,7 @@ public class Recover
     static public async ValueTask<string> run()
     {
         var sb = new StringBuilder();
-        var x = new string[] { "Asi.Selenium.Web", "V10", "V100", "SeleniumCore" };
+        var x = new string[] { "Asi.Selenium.Web", "V10",  "SeleniumCore" };
 
         foreach (var f in x)
         {
