@@ -67,7 +67,7 @@ public class CompareFiles
             // {
             //     Console.WriteLine(diff[i]);
             // }
-            Console.WriteLine($"<> {to})");
+            Console.WriteLine($"\n<> {to}");
             //Diff.Compare(a, b);
             var o = Diffplex.compare(a, b);
             Console.Write(o);
