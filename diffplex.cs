@@ -11,21 +11,27 @@ public class Diffplex
     {
         StringBuilder sb = new();
         var diff = InlineDiffBuilder.Diff(before, after, true, true, new LineChunker());
-
+        List<String> sc = new();
+        var context = () =>
+        {
+            sb.AppendLine(string.Join("\n", sc.TakeLast(2)));
+            sc.Clear();
+        };
         foreach (var line in diff.Lines)
         {
             switch (line.Type)
             {
                 case ChangeType.Inserted:
+                    context();
                     sb.AppendLine("+ " + line.Text);
                     break;
                 case ChangeType.Deleted:
+                    context();
                     sb.AppendLine("- " + line.Text);
                     break;
-                    // default:
-                    //     Console.ForegroundColor = ConsoleColor.Gray; // compromise for dark or light background
-                    //     Console.Write("  ");
-                    //     break;
+                default:
+                    sc.Add("= " + line.Text);
+                    break;
             }
         }
         return sb.ToString();
