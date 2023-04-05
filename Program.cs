@@ -1,6 +1,7 @@
 ﻿using LibGit2Sharp;
 
 Console.WriteLine("Hello, World!");
+await Recover.run();
 
 // using (var repo = new Repository(@"D:\source\LibGit2Sharp"))
 // {
