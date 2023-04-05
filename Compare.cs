@@ -48,7 +48,7 @@ public class CompareFiles
         lines = lines.Skip(i).ToArray();
         return String.Join("\n", lines);
     }
-    static public async ValueTask compare1(string from, string to)
+    static public async ValueTask compare1(string from, string to, string path)
     {
         var a = File.ReadAllText(from);
         var b = File.ReadAllText(to);
@@ -58,16 +58,19 @@ public class CompareFiles
 
         if (a != b)
         {
-            diff_match_patch dmp = new diff_match_patch();
-            List<Diff> diff = dmp.diff_main(a, b);
-            // Result: [(-1, "Hell"), (1, "G"), (0, "o"), (1, "odbye"), (0, " World.")]
-            dmp.diff_cleanupSemantic(diff);
-            // Result: [(-1, "Hello"), (1, "Goodbye"), (0, " World.")]
-            for (int i = 0; i < diff.Count; i++)
-            {
-                Console.WriteLine(diff[i]);
-            }
+            // diff_match_patch dmp = new diff_match_patch();
+            // List<Diff> diff = dmp.diff_main(a, b);
+            // // Result: [(-1, "Hell"), (1, "G"), (0, "o"), (1, "odbye"), (0, " World.")]
+            // dmp.diff_cleanupSemantic(diff);
+            // // Result: [(-1, "Hello"), (1, "Goodbye"), (0, " World.")]
+            // for (int i = 0; i < diff.Count; i++)
+            // {
+            //     Console.WriteLine(diff[i]);
+            // }
             Console.WriteLine($"<> {to})");
+            //Diff.Compare(a, b);
+            var o = Diffplex.compare(a, b);
+            Console.Write(o);
         }
         await Task.CompletedTask;
     }
@@ -94,7 +97,7 @@ public class CompareFiles
         {
             if (a.Contains(bx))
             {
-                await compare1(Path.Join(from, bx), Path.Join(to, bx));
+                await compare1(Path.Join(from, bx), Path.Join(to, bx), bx);
             }
         }
     }
@@ -109,7 +112,7 @@ public class Recover
 
         foreach (var f in x)
         {
-            await CompareFiles.compare($"../asi1/src/Asi.Test/Selenium/{f}", $"../iMIS/test/Selenium/{f}");
+            await CompareFiles.compare($"../iMIS/test/Selenium/{f}", $"../asi1/src/Asi.Test/Selenium/{f}");
         }
     }
 
