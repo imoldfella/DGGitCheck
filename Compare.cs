@@ -1,4 +1,5 @@
 
+using System.Text;
 using DiffMatchPatch;
 
 public class CompareFiles
@@ -21,15 +22,16 @@ public class CompareFiles
         catch (Exception e)
         {
             Console.WriteLine("Error: " + e.Message);
+            Environment.Exit(1);
         }
     }
 
-    static public async ValueTask<HashSet<String>> allFiles(string dir)
+    static public async ValueTask<List<String>> allFiles(string dir)
     {
         await Task.CompletedTask;
         HashSet<String> a = new();
         ListFiles(dir, a);
-        HashSet<String> b = new();
+        List<String> b = new();
         foreach (var x in a)
         {
             b.Add(x.Substring(dir.Length));
@@ -37,7 +39,7 @@ public class CompareFiles
         return b;
     }
 
-    static public string removePrefix(string s)
+    static public string removePrefix(string s, out string prefix)
     {
         var lines = s.Split("\n");
         int i = 0;
@@ -45,19 +47,22 @@ public class CompareFiles
         {
             i++;
         }
+        prefix = String.Join("\n", lines.Take(i));
         lines = lines.Skip(i).ToArray();
         return String.Join("\n", lines);
     }
-    static public async ValueTask compare1(string from, string to, string path)
+    static public async ValueTask<string> compare1(string from, string to, StringBuilder sb)
     {
         var a = File.ReadAllText(from);
         var b = File.ReadAllText(to);
 
-        a = removePrefix(a);
-        b = removePrefix(b);
+        string ap, bp;
+        a = removePrefix(a, out ap);
+        b = removePrefix(b, out bp);
 
         if (a != b)
         {
+            // 
             // diff_match_patch dmp = new diff_match_patch();
             // List<Diff> diff = dmp.diff_main(a, b);
             // // Result: [(-1, "Hell"), (1, "G"), (0, "o"), (1, "odbye"), (0, " World.")]
@@ -67,17 +72,20 @@ public class CompareFiles
             // {
             //     Console.WriteLine(diff[i]);
             // }
-            Console.WriteLine($"\n<> {to}");
+            sb.AppendLine($"\n<> {to}");
             //Diff.Compare(a, b);
             var o = Diffplex.compare(a, b);
-            Console.Write(o);
+            sb.AppendLine(o);
+            return ap + "\n" + b;
         }
         await Task.CompletedTask;
+        return "";
     }
-    static public async ValueTask compare(string from, string to)
+    static public async ValueTask compare(string from, string to, StringBuilder sb)
     {
-        HashSet<String> a = await allFiles(from);
-        HashSet<String> b = await allFiles(to);
+        var ok = (string e) => Path.GetExtension(e) == ".cs" || Path.GetExtension(e) == ".feature";
+        var a = new HashSet<string>((await allFiles(from)).Where(ok));
+        var b = new HashSet<string>((await allFiles(to)).Where(ok));
 
         foreach (var ax in a)
         {
@@ -97,7 +105,14 @@ public class CompareFiles
         {
             if (a.Contains(bx))
             {
-                await compare1(Path.Join(from, bx), Path.Join(to, bx), bx);
+                var f = await compare1(Path.Join(from, bx), Path.Join(to, bx), sb);
+                if (f != "")
+                {
+                    var replace = Path.Join(from, bx);
+                    File.Move(replace, replace + ".replace");
+                    File.WriteAllText(replace, f);
+
+                }
             }
         }
     }
@@ -106,14 +121,16 @@ public class CompareFiles
 
 public class Recover
 {
-    static public async ValueTask run()
+    static public async ValueTask<string> run()
     {
+        var sb = new StringBuilder();
         var x = new string[] { "Asi.Selenium.Web", "V10", "V100", "SeleniumCore" };
 
         foreach (var f in x)
         {
-            await CompareFiles.compare($"../iMIS/test/Selenium/{f}", $"../asi1/src/Asi.Test/Selenium/{f}");
+            await CompareFiles.compare($"../iMIS/test/Selenium/{f}", $"../asi1/src/Asi.Test/Selenium/{f}", sb);
         }
+        return sb.ToString();
     }
 
 }
